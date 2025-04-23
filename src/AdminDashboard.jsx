@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
-import { sendEmail } from './services/sendEmail'; // adjust the path if needed
 import { 
   Search, Filter, MoreVertical, Download, Eye, FileText, 
   CheckCircle, XCircle, Clock, AlertTriangle, MessageSquare, 
@@ -1185,11 +1184,16 @@ useEffect(() => {
         <button
           onClick={async () => {
             try {
-              await sendEmail(
-                selectedClaim.email,
-                `Update on your claim ${selectedClaim.id}`,
-                `<p>${emailBody}</p>`
-              );
+              await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  to: selectedClaim.email,
+                  subject: `Update on your claim ${selectedClaim.id}`,
+                  html: `<p>${emailBody}</p>`
+                })
+              });
+
               await addNote(selectedClaim.id, `Email sent to customer: "${emailBody}"`, 'Admin');
               setEmailStatus('Email sent successfully');
               setEmailModalOpen(false);
