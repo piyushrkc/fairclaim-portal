@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Dialog } from '@headlessui/react';
+import { sendEmail } from './services/sendEmail'; // adjust the path if needed
 import { 
   Search, Filter, MoreVertical, Download, Eye, FileText, 
   CheckCircle, XCircle, Clock, AlertTriangle, MessageSquare, 
@@ -29,6 +31,9 @@ function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('details');
   const [activityLogs, setActivityLogs] = useState([]);
   const [noteText, setNoteText] = useState('');
+  const [isEmailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailBody, setEmailBody] = useState('');
+  const [emailStatus, setEmailStatus] = useState('');
   const [assigneeOptions, setAssigneeOptions] = useState([]);
   const [claimCounters, setClaimCounters] = useState({
     total: 0,
@@ -430,13 +435,9 @@ useEffect(() => {
                       <Download className="h-4 w-4 mr-1.5" />
                       Export
                     </button>
-                    <button 
+                    <button
                       className="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                      onClick={() => {
-                        // Send email to customer
-                        // In real implementation, this would call an API endpoint
-                        alert('Contact customer feature would be implemented here');
-                      }}
+                      onClick={() => setEmailModalOpen(true)}
                     >
                       <MessageSquare className="h-4 w-4 mr-1.5" />
                       Contact Customer
@@ -1165,9 +1166,53 @@ useEffect(() => {
             </div>
           </div>
         )}
-      </main>
+
+{/* Email Modal */}
+<Dialog open={isEmailModalOpen} onClose={() => setEmailModalOpen(false)} className="fixed z-10 inset-0 overflow-y-auto">
+  <div className="flex items-center justify-center min-h-screen px-4">
+    <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+    <div className="relative bg-white rounded-lg p-6 shadow-xl w-full max-w-md">
+      <Dialog.Title className="text-lg font-medium text-gray-900">Send Email to Customer</Dialog.Title>
+      <textarea
+        rows="6"
+        value={emailBody}
+        onChange={(e) => setEmailBody(e.target.value)}
+        placeholder="Type your message here..."
+        className="mt-4 w-full p-2 border border-gray-300 rounded-md"
+      />
+      <div className="mt-4 flex justify-end space-x-2">
+        <button onClick={() => setEmailModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+        <button
+          onClick={async () => {
+            try {
+              await sendEmail(
+                selectedClaim.email,
+                `Update on your claim ${selectedClaim.id}`,
+                `<p>${emailBody}</p>`
+              );
+              await addNote(selectedClaim.id, `Email sent to customer: "${emailBody}"`, 'Admin');
+              setEmailStatus('Email sent successfully');
+              setEmailModalOpen(false);
+              setEmailBody('');
+              const logs = await getClaimLogs(selectedClaim.id);
+              setActivityLogs(logs);
+            } catch (err) {
+              setEmailStatus('Failed to send email');
+              console.error(err);
+            }
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Send
+        </button>
+      </div>
     </div>
-  );
+  </div>
+</Dialog>
+
+</main>
+</div>
+);
 }
 
 export default AdminDashboard;
