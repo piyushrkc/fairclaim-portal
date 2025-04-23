@@ -19,7 +19,7 @@ import {
   } from './services/claimsService';
 import { getAssignees } from './services/assigneesService';
 
-function AdminDashboard() {
+function AdminDashboard({ onLogout }) {
   const [claims, setClaims] = useState([]);
   const [filteredClaims, setFilteredClaims] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -375,11 +375,17 @@ useEffect(() => {
                 </span>
               </div>
             </button>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <div className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center text-white font-medium">
                 AV
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700">Admin</span>
+              <span className="text-sm font-medium text-gray-700">Admin</span>
+              <button
+                onClick={onLogout}
+                className="text-sm text-red-600 hover:underline ml-2"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
