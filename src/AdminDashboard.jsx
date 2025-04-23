@@ -436,7 +436,13 @@ useEffect(() => {
                     </button>
                     <button
                       className="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                      onClick={() => setEmailModalOpen(true)}
+                      onClick={() => {
+                        if (!selectedClaim?.email) {
+                          alert("No email found for this claim. Please select a valid claim.");
+                          return;
+                        }
+                        setEmailModalOpen(true);
+                      }}
                     >
                       <MessageSquare className="h-4 w-4 mr-1.5" />
                       Contact Customer
@@ -1183,6 +1189,11 @@ useEffect(() => {
         <button onClick={() => setEmailModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
         <button
           onClick={async () => {
+            if (!selectedClaim?.email) {
+              console.error("No selectedClaim.email found");
+              return;
+            }
+
             try {
               await fetch('/api/send-email', {
                 method: 'POST',
