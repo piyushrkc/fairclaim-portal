@@ -1173,7 +1173,11 @@ useEffect(() => {
         )}
 
 {/* Email Modal */}
-<Dialog open={isEmailModalOpen} onClose={() => setEmailModalOpen(false)} className="fixed z-10 inset-0 overflow-y-auto">
+{selectedClaim && (
+  <Dialog open={isEmailModalOpen} onClose={() => setEmailModalOpen(false)} className="fixed z-10 inset-0 overflow-y-auto">
+    {/* existing modal JSX */}
+  </Dialog>
+)}
   <div className="flex items-center justify-center min-h-screen px-4">
     <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
     <div className="relative bg-white rounded-lg p-6 shadow-xl w-full max-w-md">
@@ -1195,7 +1199,7 @@ useEffect(() => {
             }
 
             try {
-              await fetch('/api/send-email', {
+              const response = await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1204,7 +1208,14 @@ useEffect(() => {
                   html: `<p>${emailBody}</p>`
                 })
               });
-
+              
+              if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Failed to send email:', errorData.error || 'Unknown error');
+                setEmailStatus('Failed to send email');
+                return;
+              }
+              
               await addNote(selectedClaim.id, `Email sent to customer: "${emailBody}"`, 'Admin');
               setEmailStatus('Email sent successfully');
               setEmailModalOpen(false);
@@ -1223,7 +1234,7 @@ useEffect(() => {
       </div>
     </div>
   </div>
-</Dialog>
+
 
 </main>
 </div>
